@@ -1,14 +1,65 @@
 'use strict'
 
 var addSecretListener = require('secret-event-listener')
+var eof = require('end-of-stream')
 
 exports.all = function (test, createStream) {
   exports.api(test, createStream)
+  exports.eof(test, createStream)
   exports.destroy(test, createStream)
 }
 
 exports.api = function (test, createStream) {
   // TODO: test that stream does not define non-underscored methods
+}
+
+exports.eof = function (test, createStream) {
+  test('eof(stream) with resume()', function (t) {
+    var stream = createStream()
+    var order = monitor(stream)
+
+    eof(stream, delay(function (err) {
+      t.ifError(err, 'no eof error')
+
+      if (order[order.length - 1] === 'close') {
+        // Close event is optional (unless destroyed)
+        t.pass('underlying resource was closed')
+        order.pop()
+      }
+
+      t.same(order, allowDataEvents(order, []), order.join(', '))
+      t.end()
+    }))
+
+    stream.resume()
+  })
+
+  test('eof(stream) with destroy()', function (t) {
+    var stream = createStream()
+    var order = monitor(stream)
+
+    eof(stream, delay(function (err) {
+      t.is(err && err.message, 'premature close')
+      t.same(order, ['close'], order.join(', '))
+      t.end()
+    }))
+
+    stream.destroy()
+  })
+
+  test('eof(stream) with resume() and destroy()', function (t) {
+    var stream = createStream()
+    var order = monitor(stream)
+
+    eof(stream, delay(function (err) {
+      t.is(err && err.message, 'premature close')
+      t.same(order, ['close'], order.join(', '))
+      t.end()
+    }))
+
+    stream.resume()
+    stream.destroy()
+  })
 }
 
 exports.destroy = function (test, createStream) {
@@ -110,7 +161,7 @@ function allowDataEvents (order, expected) {
   return expected
 }
 
-function monitor (stream, onClose) {
+function monitor (stream, onEnd) {
   var order = []
 
   ;['data', 'end', 'error', 'finish', 'close'].forEach(function (event) {
@@ -121,10 +172,20 @@ function monitor (stream, onClose) {
     })
   })
 
-  // TODO: close events are optional
-  if (onClose) {
-    stream.on('close', onClose)
+  if (onEnd) {
+    // Delay to include a possible "close" event after "end" or "error"
+    eof(stream, delay(onEnd))
   }
 
   return order
+}
+
+function delay (fn) {
+  return function () {
+    var args = arguments
+
+    setImmediate(function () {
+      fn.apply(null, args)
+    })
+  }
 }

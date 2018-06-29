@@ -21,5 +21,8 @@
     "from2-array": "0.0.4",
     "secret-event-listener": "~1.0.0",
     "tape": "~4.9.1"
+  },
+  "dependencies": {
+    "end-of-stream": "~1.4.1"
   }
 }
