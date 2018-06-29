@@ -1,0 +1,25 @@
+{
+  "name": "stream-test",
+  "version": "0.0.0",
+  "description": "Test suite for stream implementors",
+  "license": "MIT",
+  "author": "Vincent Weevers",
+  "scripts": {
+    "test": "node test"
+  },
+  "keywords": [
+    "streams",
+    "readable-stream",
+    "readable",
+    "writable",
+    "test",
+    "suite",
+    "abstract",
+    "tooling"
+  ],
+  "devDependencies": {
+    "from2-array": "0.0.4",
+    "secret-event-listener": "~1.0.0",
+    "tape": "~4.9.1"
+  }
+}
