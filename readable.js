@@ -40,7 +40,7 @@ exports.eof = function (test, createStream) {
     var order = monitor(stream)
 
     eof(stream, delay(function (err) {
-      t.ok(err && err.message, ten ? 'Premature close' : 'premature close')
+      t.is(err && err.message, ten ? 'Premature close' : 'premature close')
       t.same(order, ['close'], order.join(', '))
       t.end()
     }))
