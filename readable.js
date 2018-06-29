@@ -1,7 +1,8 @@
 'use strict'
 
 var addSecretListener = require('secret-event-listener')
-var eof = require('end-of-stream')
+var ten = process.versions.node.split('.')[0] === '10'
+var eof = ten ? require('stream').finished : require('end-of-stream')
 
 exports.all = function (test, createStream) {
   exports.api(test, createStream)
@@ -39,7 +40,7 @@ exports.eof = function (test, createStream) {
     var order = monitor(stream)
 
     eof(stream, delay(function (err) {
-      t.is(err && err.message, 'premature close')
+      t.ok(err && err.message, ten ? 'Premature close' : 'premature close')
       t.same(order, ['close'], order.join(', '))
       t.end()
     }))
@@ -52,7 +53,7 @@ exports.eof = function (test, createStream) {
     var order = monitor(stream)
 
     eof(stream, delay(function (err) {
-      t.is(err && err.message, 'premature close')
+      t.is(err && err.message, ten ? 'Premature close' : 'premature close')
       t.same(order, ['close'], order.join(', '))
       t.end()
     }))
